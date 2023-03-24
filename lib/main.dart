@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 void main() {
   runApp(const MyApp());
@@ -50,29 +51,6 @@ class _FormAddSentenceState extends State<FormAddSentence> {
     });
   }
 
-  // void _submitForm() {
-  //   setState(() {
-  //     _isButtonDisabled = true;
-  //   });
-
-  //   // show a snackbar
-  //   ScaffoldMessenger.of(context).showSnackBar(
-  //     SnackBar(
-  //       content: const Text('Adicionando sentença...'),
-  //     ),
-  //   );
-
-  //   ScaffoldMessenger.of(context).showSnackBar(
-  //     SnackBar(
-  //       content: const Text('Sentença adicionada com sucesso!'),
-  //     ),
-  //   );
-
-  //   setState(() {
-  //     _isButtonDisabled = false;
-  //   });
-  // }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -109,8 +87,13 @@ class _FormAddSentenceState extends State<FormAddSentence> {
 }
 
 Future<http.Response> createSentence(String sentence) async {
-  final response = await http
-      .get(Uri.parse('https://jsonplaceholder.typicode.com/albums/1'));
+  const url = "http://10.0.2.2:8080/blacklist/sentence";
+
+  Map<String, String> headers = {'Content-Type': 'application/json'};
+  final body = jsonEncode({'text': sentence});
+
+  final response =
+      await http.post(Uri.parse(url), headers: headers, body: body);
 
   if (response.statusCode == 200) {
     print('Sentença adicionada com sucesso!');
