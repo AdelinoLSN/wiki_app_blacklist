@@ -9,13 +9,7 @@ class BlacklistSentenceRegister extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Wiki Gestor: Blacklist',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: FormAddSentence(),
-    );
+    return FormAddSentence();
   }
 }
 
@@ -35,6 +29,18 @@ class _FormAddSentenceState extends State<FormAddSentence> {
   void initState() {
     super.initState();
     _isButtonDisabled = false;
+  }
+
+  Future<http.Response> createSentence(String sentence) async {
+    const url = "$baseUrl/blacklist/sentence";
+
+    Map<String, String> headers = {'Content-Type': 'application/json'};
+    final body = jsonEncode({'text': sentence});
+
+    final response =
+        await http.post(Uri.parse(url), headers: headers, body: body);
+
+    return response;
   }
 
   void _submitForm() async {
@@ -98,8 +104,12 @@ class _FormAddSentenceState extends State<FormAddSentence> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Wiki Gestor: Blacklist'),
-      ),
+          title: const Text('Wiki Gestor: Blacklist'),
+          automaticallyImplyLeading: true,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => Navigator.of(context).pop(),
+          )),
       body: Card(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -128,16 +138,4 @@ class _FormAddSentenceState extends State<FormAddSentence> {
       ),
     );
   }
-}
-
-Future<http.Response> createSentence(String sentence) async {
-  const url = "$baseUrl/blacklist/sentence";
-
-  Map<String, String> headers = {'Content-Type': 'application/json'};
-  final body = jsonEncode({'text': sentence});
-
-  final response =
-      await http.post(Uri.parse(url), headers: headers, body: body);
-
-  return response;
 }
