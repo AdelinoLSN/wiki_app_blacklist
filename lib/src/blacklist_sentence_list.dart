@@ -70,6 +70,81 @@ class _ListSentenceState extends State<ListSentence> {
     }
   }
 
+  void openEditSentenceDialog(context, sentence) async {
+    final _textEditingController = TextEditingController();
+
+    _textEditingController.text = sentence['text'];
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Editar sentença'),
+          content: TextField(
+            controller: _textEditingController,
+          ),
+          actions: [
+            TextButton(
+              child: const Text('Cancelar'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Salvar'),
+              onPressed: () async {
+                updateSentence(sentence['id'], _textEditingController.text);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void updateSentence(sentenceId, editSentenceController) async {
+    final url = '$baseUrl/blacklist/sentence/';
+
+    Map<String, String> headers = {'Content-Type': 'application/json'};
+
+    final body = jsonEncode({
+      'id': sentenceId,
+      'text': editSentenceController,
+    });
+
+    final response =
+        await http.put(Uri.parse(url), headers: headers, body: body);
+
+    if (response.statusCode == 200) {
+      print('Sentença atualizada com sucesso!');
+      print(response.body);
+      getSentences();
+      Navigator.of(context).pop();
+    } else {
+      // Show error message
+      print('Erro ao atualizar sentença');
+      print(response.body);
+
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Erro'),
+            content: Text("Não foi possível atualizar a sentença"),
+            actions: [
+              TextButton(
+                child: const Text('OK'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -116,7 +191,9 @@ class _ListSentenceState extends State<ListSentence> {
                             IconButton(
                               icon: const Icon(Icons.edit),
                               onPressed: () => {
-                                // Open dialog to edit sentence
+                                // Open a dialog to edit sentence
+                                openEditSentenceDialog(
+                                    context, _sentences[index])
                               },
                             )
                           ],
