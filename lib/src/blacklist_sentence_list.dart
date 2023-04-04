@@ -145,6 +145,74 @@ class _ListSentenceState extends State<ListSentence> {
     }
   }
 
+  void openDeleteSentenceDialog(context, sentenceId) async {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Excluir sentença'),
+          content: const Text('Deseja realmente excluir esta sentença?'),
+          actions: [
+            TextButton(
+              child: const Text('Cancelar'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Excluir'),
+              onPressed: () async {
+                deleteSentence(sentenceId);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void deleteSentence(sentenceId) async {
+    final url = '$baseUrl/blacklist/sentence/';
+
+    Map<String, String> headers = {'Content-Type': 'application/json'};
+
+    final body = jsonEncode({
+      'id': sentenceId,
+    });
+
+    final response =
+        await http.delete(Uri.parse(url), headers: headers, body: body);
+
+    if (response.statusCode == 200) {
+      print('Sentença excluída com sucesso!');
+      print(response.body);
+      getSentences();
+      Navigator.of(context).pop();
+    } else {
+      // Show error message
+      print('Erro ao excluir sentença');
+      print(response.body);
+
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Erro'),
+            content: Text("Não foi possível excluir a sentença"),
+            actions: [
+              TextButton(
+                child: const Text('OK'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -189,13 +257,13 @@ class _ListSentenceState extends State<ListSentence> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             IconButton(
-                              icon: const Icon(Icons.edit),
-                              onPressed: () => {
-                                // Open a dialog to edit sentence
-                                openEditSentenceDialog(
-                                    context, _sentences[index])
-                              },
-                            )
+                                icon: const Icon(Icons.edit),
+                                onPressed: () => openEditSentenceDialog(
+                                    context, _sentences[index])),
+                            IconButton(
+                                icon: const Icon(Icons.delete),
+                                onPressed: () => openDeleteSentenceDialog(
+                                    context, _sentences[index]['id'])),
                           ],
                         ),
                       );
